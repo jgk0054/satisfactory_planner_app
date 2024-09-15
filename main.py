@@ -77,6 +77,7 @@ class GraphicsView(QGraphicsView):
                 self.scene().removeItem(self.temp_line)
                 self.temp_line = None
             self.drawing_line = False
+        self.updateTransferRates()
         super().mouseReleaseEvent(event)
 
     def is_valid_connection(self, start_port, end_port):
@@ -173,6 +174,7 @@ class GraphicsView(QGraphicsView):
             if isinstance(end_port, PortItem) and self.is_valid_connection(self.start_port, end_port):
                 connection = ConnectionLineItem(self.start_port, end_port)
                 self.scene().addItem(connection)
+                self.updateTransferRates()
             self.scene().removeItem(self.temp_line)
             self.temp_line = None
             self.drawing_line = False
@@ -185,6 +187,11 @@ class GraphicsView(QGraphicsView):
         if start_port.port_type == 'output' and end_port.port_type == 'input':
             return True
         return False
+    
+    def updateTransferRates(self):
+        for item in self.scene().items():
+            if isinstance(item, ConnectionLineItem):
+                item.update_transfer_rate()
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -196,17 +203,17 @@ class MainWindow(QMainWindow):
         self.view = GraphicsView(self.scene)
         self.setCentralWidget(self.view)
 
-        # # Create a miner item
-        # miner = MinerItem(100, 50)
-        # self.scene.addItem(miner)
-        # miner.setPos(0, 0)
+        # Create a miner item
+        miner = MinerItem(100, 50)
+        self.scene.addItem(miner)
+        miner.setPos(0, 0)
 
-        # # Create a smelter item
-        # smelter = SmelterItem(100, 50)
-        # self.scene.addItem(smelter)
-        # smelter.setPos(200, 0)
+        # Create a smelter item
+        smelter = SmelterItem(100, 50)
+        self.scene.addItem(smelter)
+        smelter.setPos(200, 0)
 
-        # # Create example connection
+        # Create example connection
         # connection1 = ConnectionLineItem(miner.output_port, smelter.input_port)
         # self.scene.addItem(connection1)
         

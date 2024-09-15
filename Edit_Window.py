@@ -7,7 +7,6 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QPen, QBrush, QColor
 from PyQt5.QtCore import Qt, QPointF, QLineF
-
 class EditWindow(QWidget):
     def __init__(self, component_item, is_smelter=False):
         super().__init__()

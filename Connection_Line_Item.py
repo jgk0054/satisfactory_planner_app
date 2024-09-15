@@ -33,46 +33,15 @@ class ConnectionLineItem(QGraphicsLineItem):
         from Merger_Item import MergerItem  # Deferred import
         from Splitter_Item import SplitterItem  # Deferred import
 
-        start_parent = self.start_port.parentItem()
-        end_parent = self.end_port.parentItem()
-
-        # Logic for when the start parent is a Splitter or Merger
-        if isinstance(start_parent, SplitterItem):
-            # If the start is a splitter, divide the input rate across the outputs
-            connected_outputs = len([conn for conn in start_parent.childItems() if isinstance(conn, ConnectionLineItem) and conn.start_port == self.start_port])
-            if connected_outputs > 0:
-                self.transfer_rate = start_parent.input_rate / connected_outputs if start_parent.input_rate else self.capacity
-        elif isinstance(start_parent, MergerItem):
-            # If the start is a merger, the output rate is the sum of the inputs
-            self.transfer_rate = (
-                sum(port.input_rate for port in [start_parent.input_port1, start_parent.input_port2] if port.input_rate)
-                or self.capacity
-            )
-        else:
-            # Default behavior for non-splitter/merger items
-            self.transfer_rate = min(
-                self.start_port.parentItem().output_rate if hasattr(self.start_port.parentItem(), 'output_rate') else self.capacity,
-                self.capacity
-            )
-
-        # Logic for when the end parent is a Splitter or Merger
-        if isinstance(end_parent, SplitterItem):
-            # The end is a splitter, so it should take as much as its input rate allows
-            if end_parent.input_rate:
-                self.transfer_rate = min(self.transfer_rate, end_parent.input_rate)
-        elif isinstance(end_parent, MergerItem):
-            # The end is a merger, so the rate is based on its input capacity
-            if end_parent.input_rate:
-                self.transfer_rate = min(self.transfer_rate, end_parent.input_rate)
-        else:
-            # Default behavior for non-splitter/merger items
-            self.transfer_rate = min(
-                self.transfer_rate,
-                self.end_port.parentItem().input_rate if hasattr(self.end_port.parentItem(), 'input_rate') else self.capacity,
-                self.capacity
-            )
-        
+        start_parent = self.start_port.parent
+        end_parent = self.end_port.parent
+        print(f"start_parent = {start_parent}")
+        print(f"end_parent = {end_parent}")
         # Update the label displaying the transfer rate
+        if type(start_parent) == MergerItem or type(start_parent) == SplitterItem:
+            start_parent.calculate_throughput()
+
+        self.transfer_rate = start_parent.output_rate
         self.rate_label.setPlainText(self.get_label_text())
 
     def update_position(self):

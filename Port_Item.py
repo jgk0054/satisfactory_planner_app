@@ -17,7 +17,8 @@ class PortItem(QGraphicsEllipseItem):
         self.connections = []
         self.setAcceptHoverEvents(True)
         self.hovered = False
-
+        self.parent = parent
+        
         if isinstance(parent, QGraphicsItem):
             self.setParentItem(parent)
             # Do not allow independent movement if it's attached to a parent

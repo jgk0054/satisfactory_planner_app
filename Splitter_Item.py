@@ -19,6 +19,8 @@ class SplitterItem(ComponentItem):
     def __init__(self, width=50, height=50):
         super().__init__(width, height, "Splitter")
         self.setBrush(QBrush(QColor("lightblue")))
+        self.input_rate = 0
+        self.output_rate = 0
 
         # Create one input port in the middle of the left side
         self.input_port = PortItem(-10, (height - 10) / 2, 10, 10, 'input', self)
@@ -29,17 +31,29 @@ class SplitterItem(ComponentItem):
             for i in range(3)
         ]
 
-        # No production rates; simply passes items through
-        self.input_rate = None
-        self.output_rate = None
-
     def calculate_throughput(self):
         # Calculate throughput per output port based on the number of connections
-        connected_outputs = [port for port in self.output_ports if len(port.connections) > 0]
-        if self.input_rate and connected_outputs:
-            rate_per_output = self.input_rate / len(connected_outputs)
-            for port in connected_outputs:
-                port.output_rate = rate_per_output
-        else:
+    #    print(self.input_port.connections)
+        #calculate number out outgoing connections
+        #update input rate
+        self.input_rate = 0
+        if len(self.input_port.connections) > 0:
+            for connection in self.input_port.connections:
+                print(connection.transfer_rate)
+                self.input_rate += connection.transfer_rate
+        
+        connectionCounter = 0
+        for port in self.output_ports:
+            connectionCounter += len(port.connections)
+
+        if len(self.input_port.connections) == 0:
+            self.output_rate = 0
+        elif connectionCounter > 0:
+            self.output_rate = self.input_rate / connectionCounter
             for port in self.output_ports:
-                port.output_rate = 0  # No output if no input or no connected outputs
+                for connection in port.connections:
+                    connection.transfer_rate = self.output_rate
+                    connection.rate_label.setPlainText(connection.get_label_text())
+
+        else:
+            self.output_rate = self.input_rate
