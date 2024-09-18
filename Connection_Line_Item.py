@@ -35,14 +35,18 @@ class ConnectionLineItem(QGraphicsLineItem):
 
         start_parent = self.start_port.parent
         end_parent = self.end_port.parent
+
+        self.transfer_rate = start_parent.output_rate
+        if self.transfer_rate > self.capacity:
+            self.transfer_rate = self.capacity
+        self.rate_label.setPlainText(self.get_label_text())
         print(f"start_parent = {start_parent}")
         print(f"end_parent = {end_parent}")
         # Update the label displaying the transfer rate
         if type(start_parent) == MergerItem or type(start_parent) == SplitterItem:
             start_parent.calculate_throughput()
-
-        self.transfer_rate = start_parent.output_rate
-        self.rate_label.setPlainText(self.get_label_text())
+        if type(end_parent) == MergerItem or type(end_parent) == SplitterItem:
+            end_parent.calculate_throughput()
 
     def update_position(self):
         try:

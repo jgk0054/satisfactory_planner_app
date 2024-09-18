@@ -32,10 +32,6 @@ class SplitterItem(ComponentItem):
         ]
 
     def calculate_throughput(self):
-        # Calculate throughput per output port based on the number of connections
-    #    print(self.input_port.connections)
-        #calculate number out outgoing connections
-        #update input rate
         self.input_rate = 0
         if len(self.input_port.connections) > 0:
             for connection in self.input_port.connections:
@@ -52,7 +48,10 @@ class SplitterItem(ComponentItem):
             self.output_rate = self.input_rate / connectionCounter
             for port in self.output_ports:
                 for connection in port.connections:
-                    connection.transfer_rate = self.output_rate
+                    if self.output_rate > connection.capacity:
+                        connection.transfer_rate = connection.capacity
+                    else:
+                        connection.transfer_rate = self.output_rate
                     connection.rate_label.setPlainText(connection.get_label_text())
 
         else:

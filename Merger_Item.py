@@ -17,10 +17,16 @@ class MergerItem(ComponentItem):
         self.setBrush(QBrush(QColor("purple")))
 
         # Create two evenly spaced input ports on the left side
+        # self.input_ports = [
+        #     PortItem(-10, (i + 1) * (height / 4) - 5, 10, 10, 'input', self) 
+        #     for i in range(3)
+        # ]
+
         self.input_ports = [
             PortItem(-10, (i + 1) * (height / 4) - 5, 10, 10, 'input', self) 
-            for i in range(2)
+            for i in range(3)
         ]
+
 
         # Create one output port in the middle of the right side
         self.output_port = PortItem(width, (height - 10) / 2, 10, 10, 'output', self)
@@ -30,9 +36,19 @@ class MergerItem(ComponentItem):
         self.output_rate = None
 
     def calculate_throughput(self):
-        # Sum the input rates from all connected inputs
-        connected_inputs = [port for port in self.input_ports if len(port.connections) > 0]
-        total_input_rate = sum(port.input_rate for port in connected_inputs if port.input_rate)
-
-        # Set the output rate to the sum of input rates
-        self.output_port.output_rate = total_input_rate if connected_inputs else 0
+        self.input_rate = 0
+        self.output_rate = 0
+        
+        for port in self.input_ports:
+            if len(port.connections) > 0:
+                for connection in port.connections:
+                    self.input_rate += connection.transfer_rate
+        
+        if len(self.output_port.connections) > 0:
+            for connection in self.output_port.connections:
+                if self.input_rate > connection.capacity:
+                    connection.transfer_rate = connection.capacity
+                else:
+                    connection.transfer_rate = self.input_rate
+                    connection.rate_label.setPlainText(connection.get_label_text())
+                self.output_rate = self.input_rate
